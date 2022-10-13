@@ -68,7 +68,7 @@ from pytket.extensions.qulacs.qulacs_convert import (
 
 _GPU_ENABLED = True
 try:
-    from qulacs import QuantumStateGpu  # type: ignore
+    from qulacs import QuantumStateGpu
 except ImportError:
     _GPU_ENABLED = False
 
@@ -123,7 +123,7 @@ class QulacsBackend(Backend):
 
     @property
     def backend_info(self) -> Optional["BackendInfo"]:
-        return self._backend_info
+        return None
 
     @property
     def required_predicates(self) -> List[Predicate]:
@@ -211,7 +211,7 @@ class QulacsBackend(Backend):
             try:
                 phase = float(circuit.phase)
                 coeff = np.exp(phase * np.pi * 1j)
-                state *= coeff  # type: ignore
+                state *= coeff
             except TypeError:
                 warning(
                     "Global phase is dependent on a symbolic parameter, so cannot "

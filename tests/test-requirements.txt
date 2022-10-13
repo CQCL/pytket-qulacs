@@ -1,5 +1,2 @@
-pytest
-pytest-timeout ~= 1.4.2
-hypothesis
-requests_mock
+-r ../../base-test-requirements.txt
 openfermion~=1.3
