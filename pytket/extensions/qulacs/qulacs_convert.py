@@ -39,41 +39,19 @@ _TWO_QUBIT_GATES = {OpType.CX: gate.CNOT, OpType.CZ: gate.CZ, OpType.SWAP: gate.
 _IBM_GATES = {OpType.U1: gate.U1, OpType.U2: gate.U2, OpType.U3: gate.U3}
 
 
-def _get_implicit_swaps(circuit: Circuit) -> List[Tuple[Qubit, Qubit]]:
-    # We implement the implicit qubit permutation using SWAPs
-    qubits = circuit.qubits
-    perm = circuit.implicit_qubit_permutation()
-    # output wire -> qubit
-    qubit_2_wire = wire_2_qubit = {q: q for q in qubits}
-    # qubit -> output wire
-    swaps = []
-    for q in qubits:
-        q_wire = qubit_2_wire[q]
-        target_wire = perm[q]
-        if q_wire == target_wire:
-            continue
-        # find which qubit is on target_wire
-        p = wire_2_qubit[target_wire]
-        # swap p and q so q is on the target wire
-        swaps.append((q_wire, target_wire))
-        # update dicts
-        qubit_2_wire[q] = target_wire
-        qubit_2_wire[p] = q_wire
-        wire_2_qubit[q_wire] = p
-        wire_2_qubit[target_wire] = q
-    return swaps
-
-
 def tk_to_qulacs(
     circuit: Circuit, reverse_index: bool = False, replace_implicit_swaps: bool = False
 ) -> QuantumCircuit:
     """Convert a pytket circuit to a qulacs circuit object."""
-    n_qubits = circuit.n_qubits
-    qulacs_circ = QuantumCircuit(circuit.n_qubits)
+    circ = circuit.copy()
+    if replace_implicit_swaps:
+        circ.replace_implicit_wire_swaps()
+    n_qubits = circ.n_qubits
+    qulacs_circ = QuantumCircuit(circ.n_qubits)
     index_map = {
         i: (i if not reverse_index else n_qubits - 1 - i) for i in range(n_qubits)
     }
-    for com in circuit:
+    for com in circ:
         optype = com.op.type
         if optype in _IBM_GATES:
             qulacs_gate = _IBM_GATES[optype]
@@ -123,12 +101,5 @@ def tk_to_qulacs(
                 "Gate: {} Not Implemented in Qulacs!".format(optype)
             )
         qulacs_circ.add_gate(add_gate)
-
-    if replace_implicit_swaps:
-        swaps = _get_implicit_swaps(circuit)
-        for p, q in swaps:
-            qulacs_circ.add_gate(
-                gate.SWAP(index_map[p.index[0]], index_map[q.index[0]])
-            )
 
     return qulacs_circ
