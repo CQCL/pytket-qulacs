@@ -14,10 +14,9 @@
 
 """Conversion from to tket circuits to Qulacs circuits
 """
-from typing import List, Tuple
 import numpy as np
 from qulacs import QuantumCircuit, gate  # type: ignore
-from pytket.circuit import Circuit, OpType, Qubit  # type: ignore
+from pytket.circuit import Circuit, OpType  # type: ignore
 
 _ONE_QUBIT_GATES = {
     OpType.X: gate.X,
