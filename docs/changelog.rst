@@ -1,8 +1,8 @@
 Changelog
 ~~~~~~~~~
 
-0.25.0 (unreleased)
--------------------
+0.25.0 (December 2022)
+----------------------
 
 * Fix incorrect circuit permutation handling.
 
