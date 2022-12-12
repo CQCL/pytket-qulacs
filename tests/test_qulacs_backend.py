@@ -242,6 +242,22 @@ def test_no_measure_shots() -> None:
         assert counts == {(0, 0): 10}
 
 
+def test_backend_with_circuit_permutation() -> None:
+    for b in backends:
+        c = Circuit(3).X(0).SWAP(0, 1).SWAP(0, 2)
+        qubits = c.qubits
+        sv = b.run_circuit(c).get_state()
+        # convert swaps to implicit permutation
+        c.replace_SWAPs()
+        assert c.implicit_qubit_permutation() == {
+            qubits[0]: qubits[1],
+            qubits[1]: qubits[2],
+            qubits[2]: qubits[0],
+        }
+        sv1 = b.run_circuit(c).get_state()
+        assert np.allclose(sv, sv1, atol=1e-10)
+
+
 @given(
     n_shots=strategies.integers(min_value=1, max_value=10),  # type: ignore
     n_bits=strategies.integers(min_value=0, max_value=10),
