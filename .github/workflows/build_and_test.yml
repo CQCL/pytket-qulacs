@@ -54,16 +54,17 @@ jobs:
       shell: bash
       run: |
         ./.github/workflows/build-test nomypy
-    - name: Set up Python 3.11
-      if: github.event_name == 'push' || github.event_name == 'pull_request' || github.event_name == 'schedule'
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-    - name: Build and test (3.11)
-      if: github.event_name == 'push' || github.event_name == 'pull_request' || github.event_name == 'schedule'
-      shell: bash
-      run: |
-        ./.github/workflows/build-test nomypy
+    # TODO Restore when qulacs 3.11 wheels are available.
+    # - name: Set up Python 3.11
+    #   if: github.event_name == 'push' || github.event_name == 'pull_request' || github.event_name == 'schedule'
+    #   uses: actions/setup-python@v4
+    #   with:
+    #     python-version: '3.11'
+    # - name: Build and test (3.11)
+    #   if: github.event_name == 'push' || github.event_name == 'pull_request' || github.event_name == 'schedule'
+    #   shell: bash
+    #   run: |
+    #     ./.github/workflows/build-test nomypy
     - uses: actions/upload-artifact@v3
       if: github.event_name == 'release' || contains(github.ref, 'refs/heads/wheel')
       with:
