@@ -1,6 +1,12 @@
 Changelog
 ~~~~~~~~~
 
+Unreleased
+----------
+
+* Require at least qulacs 0.5.5.
+* Add support for Python 3.11.
+
 0.26.0 (January 2023)
 ---------------------
 
