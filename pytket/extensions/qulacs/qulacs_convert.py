@@ -58,13 +58,13 @@ def tk_to_qulacs(
 
             if optype == OpType.U1:
                 param = com.op.params[0]
-                add_gate = qulacs_gate(index, param * np.pi)
+                add_gate = qulacs_gate(index, param * np.pi)  # type: ignore
             elif optype == OpType.U2:
                 param0, param1 = com.op.params
-                add_gate = qulacs_gate(index, param0 * np.pi, param1 * np.pi)
+                add_gate = qulacs_gate(index, param0 * np.pi, param1 * np.pi)  # type: ignore
             elif optype == OpType.U3:
                 param0, param1, param2 = com.op.params
-                add_gate = qulacs_gate(
+                add_gate = qulacs_gate(  # type: ignore
                     index, param0 * np.pi, param1 * np.pi, param2 * np.pi
                 )
 
