@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from collections import Counter
+from typing import List, Sequence, Union, Optional
 import warnings
 import math
 from hypothesis import given, strategies
@@ -20,18 +21,43 @@ import numpy as np
 import pytest
 from openfermion.ops import QubitOperator  # type: ignore
 from openfermion.linalg import eigenspectrum  # type: ignore
+from pytket.backends import ResultHandle
 from pytket.circuit import Circuit, BasisOrder, OpType, Qubit  # type: ignore
 from pytket.pauli import Pauli, QubitPauliString  # type: ignore
 from pytket.passes import CliffordSimp  # type: ignore
 from pytket.utils.operators import QubitPauliOperator
+from pytket.utils.results import KwargTypes
 from pytket.extensions.qulacs import QulacsBackend
 
-backends = [QulacsBackend()]
+
+def make_seeded_QulacsBackend(base: type[QulacsBackend]) -> type:
+    class SeededQulacsBackend(base):  # type: ignore
+        def __init__(self, seed: int):
+            base.__init__(self)
+            self._seed = seed
+
+        def process_circuits(
+            self,
+            circuits: Sequence[Circuit],
+            n_shots: Union[None, int, Sequence[Optional[int]]] = None,
+            valid_check: bool = True,
+            **kwargs: KwargTypes
+        ) -> List[ResultHandle]:
+            if not "seed" in kwargs:
+                kwargs["seed"] = self._seed
+            return base.process_circuits(self, circuits, n_shots, valid_check, **kwargs)
+
+    return SeededQulacsBackend
+
+
+backends = [QulacsBackend(), make_seeded_QulacsBackend(QulacsBackend)(-1)]
 
 try:
     from pytket.extensions.qulacs import QulacsGPUBackend
 
-    backends.append(QulacsGPUBackend())
+    backends.extend(
+        [QulacsGPUBackend(), make_seeded_QulacsBackend(QulacsGPUBackend)(1)]
+    )
 except ImportError:
     warnings.warn("local settings failed to import QulacsGPUBackend", ImportWarning)
 
@@ -266,7 +292,6 @@ def test_shots_bits_edgecases(n_shots, n_bits) -> None:
     c = Circuit(n_bits, n_bits)
 
     for qulacs_backend in backends:
-
         # TODO TKET-813 add more shot based backends and move to integration tests
         h = qulacs_backend.process_circuit(c, n_shots)
         res = qulacs_backend.get_result(h)
