@@ -1,7 +1,7 @@
 Changelog
 ~~~~~~~~~
 
-0.30.0 (August 2023)
+Unreleased
 --------------------
 
 * Allow setting of rng seed in qulacs backend.
