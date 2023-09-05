@@ -15,8 +15,9 @@
 """Methods to allow tket circuits to be ran on the Qulacs simulator
 """
 
-from typing import List, Optional, Sequence, Union
+from typing import List, Optional, Sequence, Union, cast
 from logging import warning
+from random import Random
 from uuid import uuid4
 import numpy as np
 from sympy import Expr  # type: ignore
@@ -181,6 +182,9 @@ class QulacsBackend(Backend):
         if valid_check:
             self._check_all_circuits(circuits, nomeasure_warn=False)
 
+        seed = cast(Optional[int], kwargs.get("seed"))
+        rng = Random(seed) if seed else None
+
         handle_list = []
         for circuit, n_shots_circ in zip(circuits, n_shots_list):
             qulacs_state = self._sim(circuit.n_qubits)
@@ -205,7 +209,9 @@ class QulacsBackend(Backend):
                 else:
                     bits, choose_indices = zip(*bits2index)
 
-                    samples = qulacs_state.sampling(n_shots_circ)
+                    samples = self._sample_quantum_state(
+                        qulacs_state, n_shots_circ, rng
+                    )
                     shots = OutcomeArray.from_ints(samples, circuit.n_qubits)
                     shots = shots.choose_indices(choose_indices)
             try:
@@ -227,6 +233,14 @@ class QulacsBackend(Backend):
             del qulacs_state
             del qulacs_circ
         return handle_list
+
+    def _sample_quantum_state(
+        self, quantum_state: QuantumState, n_shots: int, rng: Optional[Random]
+    ) -> List[int]:
+        if rng:
+            return quantum_state.sampling(n_shots, rng.randint(0, 2**32 - 1))
+        else:
+            return quantum_state.sampling(n_shots)
 
     def circuit_status(self, handle: ResultHandle) -> CircuitStatus:
         if handle in self._cache:
