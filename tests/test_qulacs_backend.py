@@ -22,9 +22,9 @@ import pytest
 from openfermion.ops import QubitOperator  # type: ignore
 from openfermion.linalg import eigenspectrum  # type: ignore
 from pytket.backends import ResultHandle
-from pytket.circuit import Circuit, BasisOrder, OpType, Qubit  # type: ignore
-from pytket.pauli import Pauli, QubitPauliString  # type: ignore
-from pytket.passes import CliffordSimp  # type: ignore
+from pytket.circuit import Circuit, BasisOrder, OpType, Qubit
+from pytket.pauli import Pauli, QubitPauliString
+from pytket.passes import CliffordSimp
 from pytket.utils.operators import QubitPauliOperator
 from pytket.utils.results import KwargTypes
 from pytket.extensions.qulacs import QulacsBackend
