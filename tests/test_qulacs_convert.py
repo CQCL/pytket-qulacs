@@ -15,9 +15,9 @@
 import warnings
 
 import numpy as np
-from qulacs import QuantumCircuit, QuantumState  # type: ignore
-from qulacs.state import inner_product  # type: ignore
-from pytket.circuit import Circuit, OpType  # type: ignore
+from qulacs import QuantumCircuit, QuantumState
+from qulacs.state import inner_product
+from pytket.circuit import Circuit, OpType
 from pytket.extensions.qulacs import tk_to_qulacs
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)

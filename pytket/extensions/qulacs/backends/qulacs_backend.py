@@ -20,8 +20,8 @@ from logging import warning
 from random import Random
 from uuid import uuid4
 import numpy as np
-from sympy import Expr  # type: ignore
-from qulacs import Observable, QuantumState  # type: ignore
+from sympy import Expr
+from qulacs import Observable, QuantumState
 from pytket.backends import (
     Backend,
     CircuitNotRunError,
@@ -33,9 +33,9 @@ from pytket.backends.backend import KwargTypes
 from pytket.backends.backendinfo import BackendInfo
 from pytket.backends.backendresult import BackendResult
 from pytket.backends.resulthandle import _ResultIdTuple
-from pytket.circuit import Circuit, OpType  # type: ignore
+from pytket.circuit import Circuit, OpType
 from pytket.extensions.qulacs._metadata import __extension_version__
-from pytket.passes import (  # type: ignore
+from pytket.passes import (
     BasePass,
     SynthesiseTket,
     SequencePass,
@@ -43,7 +43,7 @@ from pytket.passes import (  # type: ignore
     FullPeepholeOptimise,
     FlattenRegisters,
 )
-from pytket.predicates import (  # type: ignore
+from pytket.predicates import (
     GateSetPredicate,
     NoClassicalControlPredicate,
     NoFastFeedforwardPredicate,
@@ -52,10 +52,10 @@ from pytket.predicates import (  # type: ignore
     DefaultRegisterPredicate,
     Predicate,
 )
-from pytket.circuit import Pauli  # type: ignore
+from pytket.circuit import Pauli
 from pytket.passes import auto_rebase_pass
-from pytket.pauli import QubitPauliString  # type: ignore
-from pytket.architecture import Architecture  # type: ignore
+from pytket.pauli import QubitPauliString
+from pytket.architecture import Architecture
 from pytket.utils.operators import QubitPauliOperator
 from pytket.utils.outcomearray import OutcomeArray
 from pytket.extensions.qulacs.qulacs_convert import (
@@ -217,7 +217,7 @@ class QulacsBackend(Backend):
             try:
                 phase = float(circuit.phase)
                 coeff = np.exp(phase * np.pi * 1j)
-                state *= coeff  # type: ignore
+                state *= coeff
             except TypeError:
                 warning(
                     "Global phase is dependent on a symbolic parameter, so cannot "
