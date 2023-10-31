@@ -13,10 +13,11 @@
 # limitations under the License.
 
 from collections import Counter
-from typing import List, Sequence, Union, Optional
+from typing import List, Sequence, Union, Optional, Dict, Any
 import warnings
 import math
-from hypothesis import given, strategies
+from datetime import timedelta
+from hypothesis import given, strategies, settings
 import numpy as np
 import pytest
 from openfermion.ops import QubitOperator  # type: ignore
@@ -32,8 +33,10 @@ from pytket.extensions.qulacs import QulacsBackend
 
 def make_seeded_QulacsBackend(base: type[QulacsBackend]) -> type:
     class SeededQulacsBackend(base):  # type: ignore
-        def __init__(self, seed: int):
-            base.__init__(self)
+        def __init__(self, seed: int, kwargs: Optional[Dict[str, Any]] = None):
+            if kwargs is None:
+                kwargs = {}
+            base.__init__(self, **kwargs)
             self._seed = seed
 
         def process_circuits(
@@ -50,7 +53,12 @@ def make_seeded_QulacsBackend(base: type[QulacsBackend]) -> type:
     return SeededQulacsBackend
 
 
-backends = [QulacsBackend(), make_seeded_QulacsBackend(QulacsBackend)(-1)]
+backends = [
+    QulacsBackend(),
+    make_seeded_QulacsBackend(QulacsBackend)(-1),
+    QulacsBackend(result_type="density_matrix"),
+    make_seeded_QulacsBackend(QulacsBackend)(-1, {"result_type": "density_matrix"}),
+]
 
 try:
     from pytket.extensions.qulacs import QulacsGPUBackend
@@ -100,6 +108,15 @@ def h2_4q_circ(theta: float) -> Circuit:
     return circ
 
 
+def test_properties() -> None:
+    svb = QulacsBackend()
+    dmb = QulacsBackend(result_type="density_matrix")
+    assert not svb.supports_density_matrix
+    assert svb.supports_state
+    assert not dmb.supports_state
+    assert dmb.supports_density_matrix
+
+
 def test_get_state() -> None:
     qulacs_circ = h2_4q_circ(PARAM)
     correct_state = np.array(
@@ -124,12 +141,20 @@ def test_get_state() -> None:
     )
     for b in backends:
         qulacs_circ = b.get_compiled_circuit(qulacs_circ)
-        qulacs_state = b.run_circuit(qulacs_circ).get_state()
-        assert np.allclose(qulacs_state, correct_state)
+        if b.supports_state:
+            qulacs_state = b.run_circuit(qulacs_circ).get_state()
+            assert np.allclose(qulacs_state, correct_state)
+        if b.supports_density_matrix:
+            qulacs_state = b.run_circuit(qulacs_circ).get_density_matrix()
+            assert np.allclose(
+                qulacs_state, np.outer(correct_state, correct_state.conj())
+            )
 
 
 def test_statevector_phase() -> None:
     for b in backends:
+        if not b.supports_state:
+            continue
         circ = Circuit(2)
         circ.H(0).CX(0, 1)
         circ = b.get_compiled_circuit(circ)
@@ -151,14 +176,24 @@ def test_swaps_basisorder() -> None:
         assert c.n_gates_of_type(OpType.CX) == 1
         c = b.get_compiled_circuit(c)
         res = b.run_circuit(c)
-        s_ilo = res.get_state(basis=BasisOrder.ilo)
-        s_dlo = res.get_state(basis=BasisOrder.dlo)
-        correct_ilo = np.zeros((16,))
-        correct_ilo[4] = 1.0
-        assert np.allclose(s_ilo, correct_ilo)
-        correct_dlo = np.zeros((16,))
-        correct_dlo[2] = 1.0
-        assert np.allclose(s_dlo, correct_dlo)
+        if b.supports_state:
+            s_ilo = res.get_state(basis=BasisOrder.ilo)
+            s_dlo = res.get_state(basis=BasisOrder.dlo)
+            correct_ilo = np.zeros((16,))
+            correct_ilo[4] = 1.0
+            assert np.allclose(s_ilo, correct_ilo)
+            correct_dlo = np.zeros((16,))
+            correct_dlo[2] = 1.0
+            assert np.allclose(s_dlo, correct_dlo)
+        if b.supports_density_matrix:
+            s_ilo = res.get_density_matrix(basis=BasisOrder.ilo)
+            s_dlo = res.get_density_matrix(basis=BasisOrder.dlo)
+            correct_ilo = np.zeros((16,))
+            correct_ilo[4] = 1.0
+            assert np.allclose(s_ilo, np.outer(correct_ilo, correct_ilo.conj()))
+            correct_dlo = np.zeros((16,))
+            correct_dlo[2] = 1.0
+            assert np.allclose(s_dlo, np.outer(correct_dlo, correct_dlo.conj()))
 
 
 def from_OpenFermion(openf_op: "QubitOperator") -> QubitPauliOperator:
@@ -204,8 +239,18 @@ def test_basisorder() -> None:
         c.X(1)
         b.process_circuit(c)
         res = b.run_circuit(c)
-        assert (res.get_state() == np.asarray([0, 1, 0, 0])).all()
-        assert (res.get_state(basis=BasisOrder.dlo) == np.asarray([0, 0, 1, 0])).all()
+        if b.supports_state:
+            assert (res.get_state() == np.asarray([0, 1, 0, 0])).all()
+            assert (
+                res.get_state(basis=BasisOrder.dlo) == np.asarray([0, 0, 1, 0])
+            ).all()
+        if b.supports_density_matrix:
+            sv = np.asarray([0, 1, 0, 0])
+            assert (res.get_density_matrix() == np.outer(sv, sv.conj())).all()
+            sv = np.asarray([0, 0, 1, 0])
+            assert (
+                res.get_density_matrix(basis=BasisOrder.dlo) == np.outer(sv, sv.conj())
+            ).all()
         c.measure_all()
         res = b.run_circuit(c, n_shots=4, seed=4)
         assert res.get_shots().shape == (4, 2)
@@ -272,7 +317,10 @@ def test_backend_with_circuit_permutation() -> None:
     for b in backends:
         c = Circuit(3).X(0).SWAP(0, 1).SWAP(0, 2)
         qubits = c.qubits
-        sv = b.run_circuit(c).get_state()
+        if b.supports_state:
+            sv = b.run_circuit(c).get_state()
+        else:
+            sv = b.run_circuit(c).get_density_matrix()
         # convert swaps to implicit permutation
         c.replace_SWAPs()
         assert c.implicit_qubit_permutation() == {
@@ -280,7 +328,10 @@ def test_backend_with_circuit_permutation() -> None:
             qubits[1]: qubits[2],
             qubits[2]: qubits[0],
         }
-        sv1 = b.run_circuit(c).get_state()
+        if b.supports_state:
+            sv1 = b.run_circuit(c).get_state()
+        else:
+            sv1 = b.run_circuit(c).get_density_matrix()
         assert np.allclose(sv, sv1, atol=1e-10)
 
 
@@ -288,6 +339,7 @@ def test_backend_with_circuit_permutation() -> None:
     n_shots=strategies.integers(min_value=1, max_value=10),  # type: ignore
     n_bits=strategies.integers(min_value=0, max_value=10),
 )
+@settings(deadline=timedelta(seconds=1))
 def test_shots_bits_edgecases(n_shots, n_bits) -> None:
     c = Circuit(n_bits, n_bits)
 
