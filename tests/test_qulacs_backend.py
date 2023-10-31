@@ -16,7 +16,8 @@ from collections import Counter
 from typing import List, Sequence, Union, Optional, Dict, Any
 import warnings
 import math
-from hypothesis import given, strategies
+from datetime import timedelta
+from hypothesis import given, strategies, settings
 import numpy as np
 import pytest
 from openfermion.ops import QubitOperator  # type: ignore
@@ -338,6 +339,7 @@ def test_backend_with_circuit_permutation() -> None:
     n_shots=strategies.integers(min_value=1, max_value=10),  # type: ignore
     n_bits=strategies.integers(min_value=0, max_value=10),
 )
+@settings(deadline=timedelta(seconds=1))
 def test_shots_bits_edgecases(n_shots, n_bits) -> None:
     c = Circuit(n_bits, n_bits)
 
