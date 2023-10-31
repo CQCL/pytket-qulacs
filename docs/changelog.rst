@@ -1,6 +1,11 @@
 Changelog
 ~~~~~~~~~
 
+Unreleased
+--------------------
+
+* Add support for density matrix simulation.
+
 0.31.0 (October 2023)
 ---------------------
 
