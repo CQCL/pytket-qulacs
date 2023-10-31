@@ -15,7 +15,7 @@
 """Methods to allow tket circuits to be ran on the Qulacs simulator
 """
 
-from typing import List, Optional, Sequence, Union, cast
+from typing import List, Optional, Sequence, Union, Type, cast
 from logging import warning
 from random import Random
 from uuid import uuid4
@@ -126,6 +126,7 @@ class QulacsBackend(Backend):
             self._GATE_SET,
         )
         self._result_type = result_type
+        self._sim: Type[Union[QuantumState, DensityMatrix, "QuantumStateGpu"]]
         if result_type == "state_vector":
             self._sim = QuantumState
         elif result_type == "density_matrix":
@@ -211,9 +212,9 @@ class QulacsBackend(Backend):
             )
             qulacs_circ.update_quantum_state(qulacs_state)
             if self._result_type == "state_vector":
-                state = qulacs_state.get_vector()
+                state = qulacs_state.get_vector()  # type: ignore
             else:
-                state = qulacs_state.get_matrix()
+                state = qulacs_state.get_matrix()  # type: ignore
             qubits = sorted(circuit.qubits, reverse=False)
             shots = None
             bits = None
