@@ -21,7 +21,7 @@ from random import Random
 from uuid import uuid4
 import numpy as np
 from sympy import Expr
-from qulacs import Observable, QuantumState
+from qulacs import Observable, QuantumState, DensityMatrix
 from pytket.backends import (
     Backend,
     CircuitNotRunError,
@@ -106,7 +106,17 @@ class QulacsBackend(Backend):
         OpType.Barrier,
     }
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        result_type: str = "state_vector",
+    ) -> None:
+        """
+        Backend for running simulations on the Qulacs simulator
+
+        :param result_type: Indicating the type of the simulation result
+            to be returned. It can be either "state_vector" or "density_matrix".
+            Defaults to "state_vector"
+        """
         super().__init__()
         self._backend_info = BackendInfo(
             type(self).__name__,
@@ -115,8 +125,15 @@ class QulacsBackend(Backend):
             Architecture([]),
             self._GATE_SET,
         )
-
-        self._sim = QuantumState
+        self._result_type = result_type
+        if result_type == "state_vector":
+            self._sim = QuantumState
+        elif result_type == "density_matrix":
+            self._sim = DensityMatrix
+            self._supports_state = False
+            self._supports_density_matrix = True
+        else:
+            raise ValueError(f"Unsupported result type {result_type}")
 
     @property
     def _result_id_type(self) -> _ResultIdTuple:
@@ -193,7 +210,10 @@ class QulacsBackend(Backend):
                 circuit, reverse_index=True, replace_implicit_swaps=True
             )
             qulacs_circ.update_quantum_state(qulacs_state)
-            state = qulacs_state.get_vector()
+            if self._result_type == "state_vector":
+                state = qulacs_state.get_vector()
+            else:
+                state = qulacs_state.get_matrix()
             qubits = sorted(circuit.qubits, reverse=False)
             shots = None
             bits = None
@@ -214,28 +234,39 @@ class QulacsBackend(Backend):
                     )
                     shots = OutcomeArray.from_ints(samples, circuit.n_qubits)
                     shots = shots.choose_indices(choose_indices)
-            try:
-                phase = float(circuit.phase)
-                coeff = np.exp(phase * np.pi * 1j)
-                state *= coeff
-            except TypeError:
-                warning(
-                    "Global phase is dependent on a symbolic parameter, so cannot "
-                    "adjust for phase"
-                )
+            if self._result_type == "state_vector":
+                try:
+                    phase = float(circuit.phase)
+                    coeff = np.exp(phase * np.pi * 1j)
+                    state *= coeff
+                except TypeError:
+                    warning(
+                        "Global phase is dependent on a symbolic parameter, so cannot "
+                        "adjust for phase"
+                    )
             handle = ResultHandle(str(uuid4()))
-            self._cache[handle] = {
-                "result": BackendResult(
-                    state=state, shots=shots, c_bits=bits, q_bits=qubits
-                )
-            }
+            if self._result_type == "state_vector":
+                self._cache[handle] = {
+                    "result": BackendResult(
+                        state=state, shots=shots, c_bits=bits, q_bits=qubits
+                    )
+                }
+            else:
+                self._cache[handle] = {
+                    "result": BackendResult(
+                        density_matrix=state, shots=shots, c_bits=bits, q_bits=qubits
+                    )
+                }
             handle_list.append(handle)
             del qulacs_state
             del qulacs_circ
         return handle_list
 
     def _sample_quantum_state(
-        self, quantum_state: QuantumState, n_shots: int, rng: Optional[Random]
+        self,
+        quantum_state: Union[QuantumState, DensityMatrix, "QuantumStateGpu"],
+        n_shots: int,
+        rng: Optional[Random],
     ) -> List[int]:
         if rng:
             return quantum_state.sampling(n_shots, rng.randint(0, 2**32 - 1))
@@ -301,6 +332,9 @@ if _GPU_ENABLED:
         """
 
         def __init__(self) -> None:
+            """
+            Backend for running simulations on the Qulacs GPU simulator
+            """
             super().__init__()
             self._backend_info.name = type(self).__name__
             self._sim = QuantumStateGpu
