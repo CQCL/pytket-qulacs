@@ -228,13 +228,13 @@ class QulacsBackend(Backend):
                     bits = circuit.bits
                     shots = OutcomeArray.from_ints([0] * n_shots_circ, len(bits))
                 else:
-                    bits, choose_indices = zip(*bits2index)
+                    bits, choose_indices = zip(*bits2index)  # type: ignore
 
                     samples = self._sample_quantum_state(
                         qulacs_state, n_shots_circ, rng
                     )
                     shots = OutcomeArray.from_ints(samples, circuit.n_qubits)
-                    shots = shots.choose_indices(choose_indices)
+                    shots = shots.choose_indices(choose_indices)  # type: ignore
             if self._result_type == "state_vector":
                 try:
                     phase = float(circuit.phase)
