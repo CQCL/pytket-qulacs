@@ -1,7 +1,7 @@
 # pytket-qulacs
 
 [Pytket](https://cqcl.github.io/tket/pytket/api/index.html) is a python module for interfacing
-with tket, a quantum computing toolkit and optimisation compiler developed by Quantinuum.
+with tket, a quantum computing toolkit and optimising compiler developed by Quantinuum.
 
 [Qulacs](https://github.com/qulacs/qulacs) is an open-source quantum circuit
 simulator designed for large, noisy, and parametric circuits with GPU support
