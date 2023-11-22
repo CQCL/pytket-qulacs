@@ -15,7 +15,9 @@ run on the Qulacs simulator.
 `pytket-qulacs` is available for Python 3.9 and 3.10, on Linux, MacOS and
 Windows. To install, run:
 
-```pip install pytket-qulacs```
+```shell
+pip install pytket-qulacs
+```
 
 This will install `pytket` if it isn't already installed, and add new classes
 and methods into the `pytket.extensions` namespace.
