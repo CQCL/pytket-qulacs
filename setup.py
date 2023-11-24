@@ -32,7 +32,7 @@ setup(
     author_email="tket-support@cambridgequantum.com",
     python_requires=">=3.9",
     project_urls={
-        "Documentation": "https://cqcl.github.io/pytket-qulacs/api/index.html",
+        "Documentation": "https://tket.quantinuum.com/extensions/pytket-qulacs/api/index.html",
         "Source": "https://github.com/CQCL/pytket-qulacs",
         "Tracker": "https://github.com/CQCL/pytket-qulacs/issues",
     },
@@ -42,7 +42,7 @@ setup(
     license="Apache 2",
     packages=find_namespace_packages(include=["pytket.*"]),
     include_package_data=True,
-    install_requires=["pytket ~= 1.21", "qulacs ~= 0.6.0"],
+    install_requires=["pytket ~= 1.22", "qulacs ~= 0.6.0"],
     classifiers=[
         "Environment :: Console",
         "Programming Language :: Python :: 3.9",

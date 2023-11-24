@@ -1,6 +1,12 @@
 Changelog
 ~~~~~~~~~
 
+0.32.0 (November 2023)
+----------------------
+
+* Updated pytket version requirement to 1.22.
+* Add support for density matrix simulation.
+
 0.31.0 (October 2023)
 ---------------------
 
