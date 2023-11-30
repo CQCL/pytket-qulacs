@@ -122,7 +122,7 @@ class QulacsBackend(Backend):
             type(self).__name__,
             None,
             __extension_version__,
-            Architecture([]),
+            None,
             self._GATE_SET,
         )
         self._result_type = result_type
@@ -142,7 +142,7 @@ class QulacsBackend(Backend):
 
     @property
     def backend_info(self) -> Optional["BackendInfo"]:
-        return None
+        return self._backend_info
 
     @property
     def required_predicates(self) -> List[Predicate]:

@@ -1,6 +1,11 @@
 Changelog
 ~~~~~~~~~
 
+Unreleased
+--------------------
+
+* Backends now report backend_info.
+
 0.32.0 (November 2023)
 ----------------------
 
