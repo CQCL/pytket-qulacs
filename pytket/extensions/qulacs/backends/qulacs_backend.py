@@ -55,7 +55,6 @@ from pytket.predicates import (
 from pytket.circuit import Pauli
 from pytket.passes import auto_rebase_pass
 from pytket.pauli import QubitPauliString
-from pytket.architecture import Architecture
 from pytket.utils.operators import QubitPauliOperator
 from pytket.utils.outcomearray import OutcomeArray
 from pytket.extensions.qulacs.qulacs_convert import (

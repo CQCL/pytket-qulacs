@@ -29,8 +29,9 @@ def get_register_offset_map(circuit: Circuit) -> dict[str, int]:
         circuit (Circuit): The circuit for which to create the map.
 
     Returns:
-        dict[str, int]: A dictionary where the keys are the names of the quantum registers
-            of the circuit and the values are the total number of qubits in preceeding registers.
+        dict[str, int]: A dictionary where the keys are the names of the quantum
+            registers of the circuit and the values are
+            the total number of qubits in preceeding registers.
     """
     qubits_preceeding = 0
     offset_dict: dict[str, int] = {}
@@ -57,7 +58,8 @@ def get_qubit_index_map(circuit: Circuit, reverse_order: bool) -> dict[Qubit, in
 
     Returns:
         dict[Qubit, int]: A dictionary where the keys are the circuit's qubits
-            and the values are the absolute positions of qubits, accounting for the register's position.
+            and the values are the absolute positions of qubits,
+            accounting for the register's position.
     """
     # Get the dictionary accounting for register positions
     offset_map = get_register_offset_map(circuit)
@@ -106,8 +108,7 @@ def tk_to_qulacs(
     circ = circuit.copy()
     if replace_implicit_swaps:
         circ.replace_implicit_wire_swaps()
-    n_qubits = circ.n_qubits
-    qulacs_circ = QuantumCircuit(circ.n_qubits)
+        qulacs_circ = QuantumCircuit(circ.n_qubits)
 
     # Dictionary mapping qubits to their absolute position
     # Within the quantum circuit
