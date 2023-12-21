@@ -108,7 +108,7 @@ def tk_to_qulacs(
     circ = circuit.copy()
     if replace_implicit_swaps:
         circ.replace_implicit_wire_swaps()
-        qulacs_circ = QuantumCircuit(circ.n_qubits)
+    qulacs_circ = QuantumCircuit(circ.n_qubits)
 
     # Dictionary mapping qubits to their absolute position
     # Within the quantum circuit
