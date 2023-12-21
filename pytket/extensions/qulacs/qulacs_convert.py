@@ -19,6 +19,7 @@ from qulacs import QuantumCircuit, gate
 from pytket.circuit import Circuit, OpType
 from pytket.unit_id import Qubit
 
+
 def get_register_offset_map(circuit: Circuit) -> dict[str, int]:
     """Creates a map that accounts for the offset required to access the
     `pytket._tket.unit_id.Qubit`s of a `pytket._tket.unit_id.QubitRegister`
@@ -33,17 +34,18 @@ def get_register_offset_map(circuit: Circuit) -> dict[str, int]:
     """
     qubits_preceeding = 0
     offset_dict: dict[str, int] = {}
-    
+
     for register in circuit.q_registers:
         # The number of qubits to offset by is the number
         # Of qubits in all register preceeding this one
         offset_dict[register.name] = qubits_preceeding
-        
+
         # Increase the number of qubits
         # By the number of qubits this register contains
         qubits_preceeding += register.size
-    
-    return offset_dict   
+
+    return offset_dict
+
 
 def get_qubit_index_map(circuit: Circuit, reverse_order: bool) -> dict[Qubit, int]:
     """Creates a map that contains the absolute position of a qubit in a given circuit,
@@ -60,17 +62,22 @@ def get_qubit_index_map(circuit: Circuit, reverse_order: bool) -> dict[Qubit, in
     # Get the dictionary accounting for register positions
     offset_map = get_register_offset_map(circuit)
     index_map: dict[Qubit, int] = {}
-    
+
     for register in circuit.q_registers:
         for qubit_index, qubit in enumerate(register.to_list()):
             # The position of the qubit is the sum of the offset (preceeding qubits)
             # And the position of the qubit within its register
             qubit_position = offset_map[register.name] + qubit_index
-            
+
             # Invert the if the qubits are stored in reverse order
-            index_map[qubit] = qubit_position if not reverse_order else circuit.n_qubits - 1 - qubit_position
-            
+            index_map[qubit] = (
+                qubit_position
+                if not reverse_order
+                else circuit.n_qubits - 1 - qubit_position
+            )
+
     return index_map
+
 
 _ONE_QUBIT_GATES = {
     OpType.X: gate.X,
@@ -101,16 +108,15 @@ def tk_to_qulacs(
         circ.replace_implicit_wire_swaps()
     n_qubits = circ.n_qubits
     qulacs_circ = QuantumCircuit(circ.n_qubits)
-    
+
     # Dictionary mapping qubits to their absolute position
     # Within the quantum circuit
     index_map = get_qubit_index_map(circ, reverse_index)
-    
+
     for com in circ:
         optype = com.op.type
         if optype in _IBM_GATES:
             qulacs_gate = _IBM_GATES[optype]
-            
             index = index_map[com.qubits[0]]
 
             if optype == OpType.U1:

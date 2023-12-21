@@ -291,7 +291,7 @@ class QulacsBackend(Backend):
             self._check_all_circuits([state_circuit], nomeasure_warn=False)
 
         observable = Observable(state_circuit.n_qubits)
-        for (qps, coeff) in operator._dict.items():
+        for qps, coeff in operator._dict.items():
             _items = []
             if qps != QubitPauliString():
                 for qubit, pauli in qps.map.items():
