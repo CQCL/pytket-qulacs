@@ -55,7 +55,6 @@ from pytket.predicates import (
 from pytket.circuit import Pauli
 from pytket.passes import auto_rebase_pass
 from pytket.pauli import QubitPauliString
-from pytket.architecture import Architecture
 from pytket.utils.operators import QubitPauliOperator
 from pytket.utils.outcomearray import OutcomeArray
 from pytket.extensions.qulacs.qulacs_convert import (
@@ -122,7 +121,7 @@ class QulacsBackend(Backend):
             type(self).__name__,
             None,
             __extension_version__,
-            Architecture([]),
+            None,
             self._GATE_SET,
         )
         self._result_type = result_type
@@ -142,7 +141,7 @@ class QulacsBackend(Backend):
 
     @property
     def backend_info(self) -> Optional["BackendInfo"]:
-        return None
+        return self._backend_info
 
     @property
     def required_predicates(self) -> List[Predicate]:
@@ -291,7 +290,7 @@ class QulacsBackend(Backend):
             self._check_all_circuits([state_circuit], nomeasure_warn=False)
 
         observable = Observable(state_circuit.n_qubits)
-        for (qps, coeff) in operator._dict.items():
+        for qps, coeff in operator._dict.items():
             _items = []
             if qps != QubitPauliString():
                 for qubit, pauli in qps.map.items():

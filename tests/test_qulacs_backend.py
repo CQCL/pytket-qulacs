@@ -335,6 +335,11 @@ def test_backend_with_circuit_permutation() -> None:
         assert np.allclose(sv, sv1, atol=1e-10)
 
 
+def test_backend_info() -> None:
+    for b in backends:
+        assert b.backend_info is not None
+
+
 @given(
     n_shots=strategies.integers(min_value=1, max_value=10),  # type: ignore
     n_bits=strategies.integers(min_value=0, max_value=10),

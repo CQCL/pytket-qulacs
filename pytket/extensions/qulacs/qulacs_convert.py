@@ -17,6 +17,7 @@
 import numpy as np
 from qulacs import QuantumCircuit, gate
 from pytket.circuit import Circuit, OpType
+from pytket.passes import FlattenRegisters
 
 _ONE_QUBIT_GATES = {
     OpType.X: gate.X,
@@ -43,6 +44,10 @@ def tk_to_qulacs(
 ) -> QuantumCircuit:
     """Convert a pytket circuit to a qulacs circuit object."""
     circ = circuit.copy()
+
+    if not circ.is_simple:
+        FlattenRegisters().apply(circ)
+
     if replace_implicit_swaps:
         circ.replace_implicit_wire_swaps()
     n_qubits = circ.n_qubits
