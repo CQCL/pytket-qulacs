@@ -20,8 +20,6 @@ from datetime import timedelta
 from hypothesis import given, strategies, settings
 import numpy as np
 import pytest
-from openfermion.ops import QubitOperator  # type: ignore
-from openfermion.linalg import eigenspectrum  # type: ignore
 from pytket.backends import ResultHandle
 from pytket.circuit import Circuit, BasisOrder, OpType, Qubit
 from pytket.pauli import Pauli, QubitPauliString
@@ -196,39 +194,42 @@ def test_swaps_basisorder() -> None:
             assert np.allclose(s_dlo, np.outer(correct_dlo, correct_dlo.conj()))
 
 
-def from_OpenFermion(openf_op: "QubitOperator") -> QubitPauliOperator:
-    """Convert OpenFermion QubitOperator to pytket QubitPauliOperator."""
-    STRING_TO_PAULI = {"I": Pauli.I, "X": Pauli.X, "Y": Pauli.Y, "Z": Pauli.Z}
-    tk_op = dict()
-    for term, coeff in openf_op.terms.items():
-        string = QubitPauliString(
-            {Qubit(qubitnum): STRING_TO_PAULI[paulisym] for qubitnum, paulisym in term}
-        )
-        tk_op[string] = coeff
-    return QubitPauliOperator(tk_op)
-
-
 @pytest.mark.filterwarnings("ignore::PendingDeprecationWarning")
 def test_statevector_expectation() -> None:
-    hamiltonian = QubitOperator()
-    hamiltonian.terms = {
-        (): 0.08406444459465776,
-        ((0, "Z"),): 0.17218393261915543,
-        ((1, "Z"),): 0.17218393261915546,
-        ((0, "Z"), (1, "Z")): 0.16892753870087912,
-        ((0, "Y"), (1, "X"), (2, "Y")): 0.04523279994605785,
-        ((0, "X"), (1, "X"), (2, "X")): (0.04523279994605785),
-        ((0, "Y"), (1, "Y"), (2, "X")): -0.04523279994605785,
-        ((0, "X"), (1, "Y"), (2, "Y")): (0.04523279994605785),
-        ((2, "Z"),): -0.45150698444804915,
-        ((0, "Z"), (2, "Z")): 0.2870580651815905,
-        ((1, "Z"), (2, "Z")): 0.2870580651815905,
-    }
-    target = eigenspectrum(hamiltonian)[0]
+    target = -1.1373060357534004
+    hamiltonian = QubitPauliOperator(
+        {
+            QubitPauliString(): 0.08406444459465776,
+            QubitPauliString([Qubit(0)], [Pauli.Z]): 0.17218393261915543,
+            QubitPauliString([Qubit(1)], [Pauli.Z]): 0.17218393261915546,
+            QubitPauliString([Qubit(2)], [Pauli.Z]): -0.45150698444804915,
+            QubitPauliString(
+                [Qubit(0), Qubit(1)], [Pauli.Z, Pauli.Z]
+            ): 0.16892753870087912,
+            QubitPauliString(
+                [Qubit(0), Qubit(2)], [Pauli.Z, Pauli.Z]
+            ): 0.2870580651815905,
+            QubitPauliString(
+                [Qubit(1), Qubit(2)], [Pauli.Z, Pauli.Z]
+            ): 0.2870580651815905,
+            QubitPauliString(
+                [Qubit(0), Qubit(1), Qubit(2)], [Pauli.Y, Pauli.X, Pauli.Y]
+            ): 0.04523279994605785,
+            QubitPauliString(
+                [Qubit(0), Qubit(1), Qubit(2)], [Pauli.X, Pauli.X, Pauli.X]
+            ): 0.04523279994605785,
+            QubitPauliString(
+                [Qubit(0), Qubit(1), Qubit(2)], [Pauli.Y, Pauli.Y, Pauli.X]
+            ): -0.04523279994605785,
+            QubitPauliString(
+                [Qubit(0), Qubit(1), Qubit(2)], [Pauli.X, Pauli.Y, Pauli.Y]
+            ): 0.04523279994605785,
+        }
+    )
     circ = h2_3q_circ(PARAM)
     for b in backends:
         circ = b.get_compiled_circuit(circ)
-        energy = b.get_operator_expectation_value(circ, from_OpenFermion(hamiltonian))
+        energy = b.get_operator_expectation_value(circ, hamiltonian)
         assert np.isclose(energy, target)
 
 
@@ -258,16 +259,6 @@ def test_basisorder() -> None:
 
 
 pauli_sym = {"I": Pauli.I, "X": Pauli.X, "Y": Pauli.Y, "Z": Pauli.Z}
-
-
-def qps_from_openfermion(paulis: QubitOperator) -> QubitPauliString:
-    """Utility function to translate from openfermion format to a QubitPauliString"""
-    qlist = []
-    plist = []
-    for q, p in paulis:
-        qlist.append(Qubit(q))
-        plist.append(pauli_sym[p])
-    return QubitPauliString(qlist, plist)
 
 
 def test_measurement_mask() -> None:
