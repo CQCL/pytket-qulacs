@@ -2,4 +2,3 @@ pytest
 pytest-timeout ~= 2.2.0
 hypothesis
 requests_mock
-openfermion~=1.6

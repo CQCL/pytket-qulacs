@@ -1,6 +1,14 @@
 Changelog
 ~~~~~~~~~
 
+Unreleased
+----------
+
+General:
+
+* Python 3.9 support dropped.
+* pytket dependency updated to 1.24
+
 0.33.0 (January 2024)
 ---------------------
 
