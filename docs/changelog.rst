@@ -1,6 +1,11 @@
 Changelog
 ~~~~~~~~~
 
+Unreleased
+----------
+
+* Fix incorrect readout when circuit contains implicit swaps 
+
 0.35.0 (March 2024)
 -------------------
 

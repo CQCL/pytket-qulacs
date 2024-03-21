@@ -324,6 +324,25 @@ def test_backend_with_circuit_permutation() -> None:
         else:
             sv1 = b.run_circuit(c).get_density_matrix()
         assert np.allclose(sv, sv1, atol=1e-10)
+        # test circuits with implicit swaps
+        wire_map = {0: 3, 1: 0, 2: 1, 3: 2}
+        for x in [0, 1, 2, 3]:
+            c = Circuit(4).X(x).SWAP(0, 1).SWAP(1, 2).SWAP(2, 3).measure_all()
+            expected_readout = tuple([1 if i == wire_map[x] else 0 for i in range(4)])
+            # without implicit swaps
+            counts = b.run_circuit(c, n_shots=100).get_counts()
+            assert len(counts) == 1
+            assert counts[expected_readout] == 100
+            # with implicit swaps
+            c.replace_SWAPs()
+            counts = b.run_circuit(c, n_shots=100).get_counts()
+            assert len(counts) == 1
+            assert counts[expected_readout] == 100
+        # https://github.com/CQCL/pytket-qulacs/issues/86
+        c = Circuit(2, 1).X(0).SWAP(0, 1).Measure(1, 0)
+        compiled = b.get_compiled_circuit(c, optimisation_level=2)
+        res = b.run_circuit(compiled, n_shots=5)
+        assert res.get_counts()[(1,)] == 5
 
 
 def test_backend_info() -> None:
