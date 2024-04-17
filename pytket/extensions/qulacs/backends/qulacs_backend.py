@@ -1,4 +1,4 @@
-# Copyright 2019-2024 Cambridge Quantum Computing
+# Copyright 2019-2024 Quantinuum
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -218,8 +218,12 @@ class QulacsBackend(Backend):
             shots = None
             bits = None
             if n_shots_circ is not None:
+                # tk_to_qulacs might add SWAPs after measurements,
+                # hence we need to push the measurements through the
+                # SWAPs.
+                wire_map = circuit.implicit_qubit_permutation()
                 bits2index = list(
-                    (com.bits[0], qubits.index(com.qubits[0]))
+                    (com.bits[0], qubits.index(wire_map[com.qubits[0]]))
                     for com in circuit
                     if com.op.type == OpType.Measure
                 )
