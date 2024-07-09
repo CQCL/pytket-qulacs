@@ -308,9 +308,9 @@ class QulacsBackend(Backend):
 
             qulacs_qps = " ".join(_items)
             if isinstance(coeff, Expr):
-                qulacs_coeff = complex(coeff.evalf())  # type: ignore
+                qulacs_coeff = complex(coeff.evalf())
             else:
-                qulacs_coeff = complex(coeff)  # type: ignore
+                qulacs_coeff = complex(coeff)
             observable.add_operator(qulacs_coeff, qulacs_qps)
 
         expectation_value = self._expectation_value(state_circuit, observable)
