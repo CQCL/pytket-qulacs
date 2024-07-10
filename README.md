@@ -10,6 +10,9 @@ for fast execution.
 `pytket-qulacs` is an extension to `pytket` that allows `pytket` circuits to be
 run on the Qulacs simulator.
 
+Some useful links:
+- [API Documentation](https://tket.quantinuum.com/extensions/pytket-qulacs/)
+
 ## Getting started
 
 `pytket-qulacs` is available for Python 3.10 and 3.11 on Linux, MacOS and
