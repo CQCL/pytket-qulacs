@@ -36,3 +36,9 @@ The ``QulacsGPUBackend`` has an identical API to the ``QulacsBackend``.
 .. toctree::
     api.rst
     changelog.rst
+
+.. toctree::
+   :caption: Useful links
+
+   Issue tracker <https://github.com/CQCL/pytket-qulacs/issues>
+   PyPi <https://pypi.org/project/pytket-qulacs/>
