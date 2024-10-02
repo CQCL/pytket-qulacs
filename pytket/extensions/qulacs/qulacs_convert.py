@@ -20,23 +20,23 @@ from pytket.circuit import Circuit, OpType
 from pytket.passes import FlattenRegisters
 
 _ONE_QUBIT_GATES = {
-    OpType.X: gate.X,  # type: ignore
-    OpType.Y: gate.Y,  # type: ignore
-    OpType.Z: gate.Z,  # type: ignore
-    OpType.H: gate.H,  # type: ignore
-    OpType.S: gate.S,  # type: ignore
-    OpType.Sdg: gate.Sdag,  # type: ignore
-    OpType.T: gate.T,  # type: ignore
-    OpType.Tdg: gate.Tdag,  # type: ignore
+    OpType.X: gate.X,
+    OpType.Y: gate.Y,
+    OpType.Z: gate.Z,
+    OpType.H: gate.H,
+    OpType.S: gate.S,
+    OpType.Sdg: gate.Sdag,
+    OpType.T: gate.T,
+    OpType.Tdg: gate.Tdag,
 }
 
-_ONE_QUBIT_ROTATIONS = {OpType.Rx: gate.RX, OpType.Ry: gate.RY, OpType.Rz: gate.RZ}  # type: ignore
+_ONE_QUBIT_ROTATIONS = {OpType.Rx: gate.RX, OpType.Ry: gate.RY, OpType.Rz: gate.RZ}
 
-_MEASURE_GATES = {OpType.Measure: gate.Measurement}  # type: ignore
+_MEASURE_GATES = {OpType.Measure: gate.Measurement}
 
-_TWO_QUBIT_GATES = {OpType.CX: gate.CNOT, OpType.CZ: gate.CZ, OpType.SWAP: gate.SWAP}  # type: ignore
+_TWO_QUBIT_GATES = {OpType.CX: gate.CNOT, OpType.CZ: gate.CZ, OpType.SWAP: gate.SWAP}
 
-_IBM_GATES = {OpType.U1: gate.U1, OpType.U2: gate.U2, OpType.U3: gate.U3}  # type: ignore
+_IBM_GATES = {OpType.U1: gate.U1, OpType.U2: gate.U2, OpType.U3: gate.U3}
 
 
 def tk_to_qulacs(
@@ -63,13 +63,13 @@ def tk_to_qulacs(
 
             if optype == OpType.U1:
                 param = com.op.params[0]
-                add_gate = qulacs_gate(index, param * np.pi)
+                add_gate = qulacs_gate(index, param * np.pi)  # type: ignore
             elif optype == OpType.U2:
                 param0, param1 = com.op.params
-                add_gate = qulacs_gate(index, param0 * np.pi, param1 * np.pi)
+                add_gate = qulacs_gate(index, param0 * np.pi, param1 * np.pi)  # type: ignore
             elif optype == OpType.U3:
                 param0, param1, param2 = com.op.params
-                add_gate = qulacs_gate(
+                add_gate = qulacs_gate(  # type: ignore
                     index, param0 * np.pi, param1 * np.pi, param2 * np.pi
                 )
 
