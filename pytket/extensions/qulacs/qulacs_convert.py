@@ -15,9 +15,10 @@
 """Conversion from to tket circuits to Qulacs circuits
 """
 import numpy as np
-from qulacs import QuantumCircuit, gate
+
 from pytket.circuit import Circuit, OpType
 from pytket.passes import FlattenRegisters
+from qulacs import QuantumCircuit, gate
 
 _ONE_QUBIT_GATES = {
     OpType.X: gate.X,
@@ -90,19 +91,12 @@ def tk_to_qulacs(
             id2 = index_map[com.qubits[1].index[0]]
             add_gate = qulacs_gate(id1, id2)
 
-        elif optype in _MEASURE_GATES:
-            continue
-            # gate = _MEASURE_GATES[optype]
-            # qubit = com.qubits[0].index[0]
-            # bit = com.bits[0].index[0]
-            # add_gate = (gate(qubit, bit))
-
-        elif optype == OpType.Barrier:
+        elif optype in _MEASURE_GATES or optype == OpType.Barrier:
             continue
 
         else:
             raise NotImplementedError(
-                "Gate: {} Not Implemented in Qulacs!".format(optype)
+                f"Gate: {optype} Not Implemented in Qulacs!"
             )
         qulacs_circ.add_gate(add_gate)
 

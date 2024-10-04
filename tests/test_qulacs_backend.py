@@ -12,21 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections import Counter
-from typing import List, Sequence, Union, Optional, Dict, Any
-import warnings
 import math
+import warnings
+from collections import Counter
+from collections.abc import Sequence
 from datetime import timedelta
-from hypothesis import given, strategies, settings
+from typing import Any, Dict, List, Optional, Union
+
 import numpy as np
 import pytest
+from hypothesis import given, settings, strategies
+
 from pytket.backends import ResultHandle
-from pytket.circuit import Circuit, BasisOrder, OpType, Qubit
-from pytket.pauli import Pauli, QubitPauliString
+from pytket.circuit import BasisOrder, Circuit, OpType, Qubit
+from pytket.extensions.qulacs import QulacsBackend
 from pytket.passes import CliffordSimp
+from pytket.pauli import Pauli, QubitPauliString
 from pytket.utils.operators import QubitPauliOperator
 from pytket.utils.results import KwargTypes
-from pytket.extensions.qulacs import QulacsBackend
 
 
 def make_seeded_QulacsBackend(base: type[QulacsBackend]) -> type:
@@ -44,7 +47,7 @@ def make_seeded_QulacsBackend(base: type[QulacsBackend]) -> type:
             valid_check: bool = True,
             **kwargs: KwargTypes
         ) -> List[ResultHandle]:
-            if not "seed" in kwargs:
+            if "seed" not in kwargs:
                 kwargs["seed"] = self._seed
             return base.process_circuits(self, circuits, n_shots, valid_check, **kwargs)
 
