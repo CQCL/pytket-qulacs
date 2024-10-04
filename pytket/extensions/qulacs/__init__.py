@@ -14,13 +14,12 @@
 """Module for conversion from tket primitives to Qulacs primitives."""
 
 # _metadata.py is copied to the folder after installation.
+from contextlib import suppress
+
 from ._metadata import __extension_name__, __extension_version__
 from .backends import QulacsBackend
 
-try:
+with suppress(ImportError):
     from .backends import QulacsGPUBackend
-except ImportError:
-    # warning was already raised
-    pass
 
 from .qulacs_convert import tk_to_qulacs
