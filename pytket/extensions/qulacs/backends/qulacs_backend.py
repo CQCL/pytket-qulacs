@@ -15,13 +15,15 @@
 """Methods to allow tket circuits to be ran on the Qulacs simulator
 """
 
-from typing import List, Optional, Sequence, Union, Type, cast
+from collections.abc import Sequence
 from logging import warning
 from random import Random
+from typing import Optional, Union, cast
 from uuid import uuid4
+
 import numpy as np
 from sympy import Expr
-from qulacs import Observable, QuantumState, DensityMatrix
+
 from pytket.backends import (
     Backend,
     CircuitNotRunError,
@@ -33,38 +35,38 @@ from pytket.backends.backend import KwargTypes
 from pytket.backends.backendinfo import BackendInfo
 from pytket.backends.backendresult import BackendResult
 from pytket.backends.resulthandle import _ResultIdTuple
-from pytket.circuit import Circuit, OpType
+from pytket.circuit import Circuit, OpType, Pauli
 from pytket.extensions.qulacs._metadata import __extension_version__
+from pytket.extensions.qulacs.qulacs_convert import (
+    _IBM_GATES,
+    _MEASURE_GATES,
+    _ONE_QUBIT_GATES,
+    _ONE_QUBIT_ROTATIONS,
+    _TWO_QUBIT_GATES,
+    tk_to_qulacs,
+)
 from pytket.passes import (
     BasePass,
-    SynthesiseTket,
-    SequencePass,
     DecomposeBoxes,
-    FullPeepholeOptimise,
     FlattenRegisters,
+    FullPeepholeOptimise,
+    SequencePass,
+    SynthesiseTket,
+    auto_rebase_pass,
 )
+from pytket.pauli import QubitPauliString
 from pytket.predicates import (
+    DefaultRegisterPredicate,
     GateSetPredicate,
     NoClassicalControlPredicate,
     NoFastFeedforwardPredicate,
     NoMidMeasurePredicate,
     NoSymbolsPredicate,
-    DefaultRegisterPredicate,
     Predicate,
 )
-from pytket.circuit import Pauli
-from pytket.passes import auto_rebase_pass
-from pytket.pauli import QubitPauliString
 from pytket.utils.operators import QubitPauliOperator
 from pytket.utils.outcomearray import OutcomeArray
-from pytket.extensions.qulacs.qulacs_convert import (
-    tk_to_qulacs,
-    _IBM_GATES,
-    _MEASURE_GATES,
-    _ONE_QUBIT_GATES,
-    _TWO_QUBIT_GATES,
-    _ONE_QUBIT_ROTATIONS,
-)
+from qulacs import DensityMatrix, Observable, QuantumState
 
 _GPU_ENABLED = True
 try:
@@ -125,7 +127,7 @@ class QulacsBackend(Backend):
             self._GATE_SET,
         )
         self._result_type = result_type
-        self._sim: Type[Union[QuantumState, DensityMatrix, "QuantumStateGpu"]]
+        self._sim: type[Union[QuantumState, DensityMatrix, QuantumStateGpu]]
         if result_type == "state_vector":
             self._sim = QuantumState
         elif result_type == "density_matrix":
@@ -144,7 +146,7 @@ class QulacsBackend(Backend):
         return self._backend_info
 
     @property
-    def required_predicates(self) -> List[Predicate]:
+    def required_predicates(self) -> list[Predicate]:
         return [
             NoClassicalControlPredicate(),
             NoFastFeedforwardPredicate(),
@@ -188,7 +190,7 @@ class QulacsBackend(Backend):
         n_shots: Union[None, int, Sequence[Optional[int]]] = None,
         valid_check: bool = True,
         **kwargs: KwargTypes,
-    ) -> List[ResultHandle]:
+    ) -> list[ResultHandle]:
         circuits = list(circuits)
         n_shots_list = Backend._get_n_shots_as_list(
             n_shots,
@@ -271,7 +273,7 @@ class QulacsBackend(Backend):
         quantum_state: Union[QuantumState, DensityMatrix, "QuantumStateGpu"],
         n_shots: int,
         rng: Optional[Random],
-    ) -> List[int]:
+    ) -> list[int]:
         if rng:
             return quantum_state.sampling(n_shots, rng.randint(0, 2**32 - 1))
         else:
