@@ -18,7 +18,7 @@
 from collections.abc import Sequence
 from logging import warning
 from random import Random
-from typing import List, Optional, Type, Union, cast
+from typing import Optional, Union, cast
 from uuid import uuid4
 
 import numpy as np
@@ -127,7 +127,7 @@ class QulacsBackend(Backend):
             self._GATE_SET,
         )
         self._result_type = result_type
-        self._sim: Type[Union[QuantumState, DensityMatrix, QuantumStateGpu]]
+        self._sim: type[Union[QuantumState, DensityMatrix, QuantumStateGpu]]
         if result_type == "state_vector":
             self._sim = QuantumState
         elif result_type == "density_matrix":
@@ -146,7 +146,7 @@ class QulacsBackend(Backend):
         return self._backend_info
 
     @property
-    def required_predicates(self) -> List[Predicate]:
+    def required_predicates(self) -> list[Predicate]:
         return [
             NoClassicalControlPredicate(),
             NoFastFeedforwardPredicate(),
@@ -190,7 +190,7 @@ class QulacsBackend(Backend):
         n_shots: Union[None, int, Sequence[Optional[int]]] = None,
         valid_check: bool = True,
         **kwargs: KwargTypes,
-    ) -> List[ResultHandle]:
+    ) -> list[ResultHandle]:
         circuits = list(circuits)
         n_shots_list = Backend._get_n_shots_as_list(
             n_shots,
@@ -273,7 +273,7 @@ class QulacsBackend(Backend):
         quantum_state: Union[QuantumState, DensityMatrix, "QuantumStateGpu"],
         n_shots: int,
         rng: Optional[Random],
-    ) -> List[int]:
+    ) -> list[int]:
         if rng:
             return quantum_state.sampling(n_shots, rng.randint(0, 2**32 - 1))
         else:

@@ -95,9 +95,7 @@ def tk_to_qulacs(
             continue
 
         else:
-            raise NotImplementedError(
-                f"Gate: {optype} Not Implemented in Qulacs!"
-            )
+            raise NotImplementedError(f"Gate: {optype} Not Implemented in Qulacs!")
         qulacs_circ.add_gate(add_gate)
 
     return qulacs_circ

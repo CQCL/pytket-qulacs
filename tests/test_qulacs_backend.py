@@ -17,7 +17,7 @@ import warnings
 from collections import Counter
 from collections.abc import Sequence
 from datetime import timedelta
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional, Union
 
 import numpy as np
 import pytest
@@ -34,7 +34,7 @@ from pytket.utils.results import KwargTypes
 
 def make_seeded_QulacsBackend(base: type[QulacsBackend]) -> type:
     class SeededQulacsBackend(base):  # type: ignore
-        def __init__(self, seed: int, kwargs: Optional[Dict[str, Any]] = None):
+        def __init__(self, seed: int, kwargs: Optional[dict[str, Any]] = None):
             if kwargs is None:
                 kwargs = {}
             base.__init__(self, **kwargs)
@@ -46,7 +46,7 @@ def make_seeded_QulacsBackend(base: type[QulacsBackend]) -> type:
             n_shots: Union[None, int, Sequence[Optional[int]]] = None,
             valid_check: bool = True,
             **kwargs: KwargTypes
-        ) -> List[ResultHandle]:
+        ) -> list[ResultHandle]:
             if "seed" not in kwargs:
                 kwargs["seed"] = self._seed
             return base.process_circuits(self, circuits, n_shots, valid_check, **kwargs)
