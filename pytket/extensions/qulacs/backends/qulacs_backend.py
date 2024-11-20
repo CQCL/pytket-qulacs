@@ -53,7 +53,7 @@ from pytket.predicates import (
     Predicate,
 )
 from pytket.circuit import Pauli
-from pytket.passes import auto_rebase_pass
+from pytket.passes import AutoRebase
 from pytket.pauli import QubitPauliString
 from pytket.utils.operators import QubitPauliOperator
 from pytket.utils.outcomearray import OutcomeArray
@@ -155,7 +155,7 @@ class QulacsBackend(Backend):
         ]
 
     def rebase_pass(self) -> BasePass:
-        return auto_rebase_pass(set(_TWO_QUBIT_GATES) | _1Q_GATES)
+        return AutoRebase(set(_TWO_QUBIT_GATES) | _1Q_GATES)
 
     def default_compilation_pass(self, optimisation_level: int = 1) -> BasePass:
         assert optimisation_level in range(3)
