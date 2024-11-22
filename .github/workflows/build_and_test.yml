@@ -54,17 +54,16 @@ jobs:
       shell: bash
       run: |
         ./.github/workflows/build-test nomypy
-    # Uncomment the following once qulacs supports python 3.12
-    # - name: Set up Python 3.12
-    #   if: github.event_name == 'push' || github.event_name == 'pull_request' || github.event_name == 'schedule'
-    #   uses: actions/setup-python@v5
-    #   with:
-    #     python-version: '3.12'
-    # - name: Build and test (3.12)
-    #   if: github.event_name == 'push' || github.event_name == 'pull_request' || github.event_name == 'schedule'
-    #   shell: bash
-    #   run: |
-    #     ./.github/workflows/build-test nomypy
+    - name: Set up Python 3.12
+      if: github.event_name == 'push' || github.event_name == 'pull_request' || github.event_name == 'schedule'
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    - name: Build and test (3.12)
+      if: github.event_name == 'push' || github.event_name == 'pull_request' || github.event_name == 'schedule'
+      shell: bash
+      run: |
+        ./.github/workflows/build-test nomypy
     - uses: actions/upload-artifact@v4
       if: github.event_name == 'release' || contains(github.ref, 'refs/heads/wheel')
       with:
