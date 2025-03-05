@@ -351,11 +351,11 @@ def test_backend_info() -> None:
 
 
 @given(
-    n_shots=strategies.integers(min_value=1, max_value=10),  # type: ignore
+    n_shots=strategies.integers(min_value=1, max_value=10),
     n_bits=strategies.integers(min_value=0, max_value=10),
 )
 @settings(deadline=timedelta(seconds=1))
-def test_shots_bits_edgecases(n_shots, n_bits) -> None:
+def test_shots_bits_edgecases(n_shots, n_bits) -> None:  # type: ignore
     c = Circuit(n_bits, n_bits)
 
     for qulacs_backend in backends:
