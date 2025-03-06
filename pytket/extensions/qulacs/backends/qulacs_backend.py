@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Methods to allow tket circuits to be ran on the Qulacs simulator
-"""
+"""Methods to allow tket circuits to be ran on the Qulacs simulator"""
 
 from typing import List, Optional, Sequence, Union, Type, cast
 from logging import warning

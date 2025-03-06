@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Conversion from to tket circuits to Qulacs circuits
-"""
+"""Conversion from to tket circuits to Qulacs circuits"""
 import numpy as np
 from qulacs import QuantumCircuit, gate
 from pytket.circuit import Circuit, OpType
