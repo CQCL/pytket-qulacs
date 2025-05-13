@@ -14,13 +14,15 @@
 
 """Methods to allow tket circuits to be ran on the Qulacs simulator"""
 
-from typing import List, Optional, Sequence, Union, Type, cast
+from collections.abc import Sequence
 from logging import warning
 from random import Random
+from typing import Optional, Union, cast
 from uuid import uuid4
+
 import numpy as np
 from sympy import Expr
-from qulacs import Observable, QuantumState, DensityMatrix
+
 from pytket.backends import (
     Backend,
     CircuitNotRunError,
@@ -32,38 +34,38 @@ from pytket.backends.backend import KwargTypes
 from pytket.backends.backendinfo import BackendInfo
 from pytket.backends.backendresult import BackendResult
 from pytket.backends.resulthandle import _ResultIdTuple
-from pytket.circuit import Circuit, OpType
+from pytket.circuit import Circuit, OpType, Pauli
 from pytket.extensions.qulacs._metadata import __extension_version__
-from pytket.passes import (
-    BasePass,
-    SynthesiseTket,
-    SequencePass,
-    DecomposeBoxes,
-    FullPeepholeOptimise,
-    FlattenRegisters,
+from pytket.extensions.qulacs.qulacs_convert import (
+    _IBM_GATES,
+    _MEASURE_GATES,
+    _ONE_QUBIT_GATES,
+    _ONE_QUBIT_ROTATIONS,
+    _TWO_QUBIT_GATES,
+    tk_to_qulacs,
 )
+from pytket.passes import (
+    AutoRebase,
+    BasePass,
+    DecomposeBoxes,
+    FlattenRegisters,
+    FullPeepholeOptimise,
+    SequencePass,
+    SynthesiseTket,
+)
+from pytket.pauli import QubitPauliString
 from pytket.predicates import (
+    DefaultRegisterPredicate,
     GateSetPredicate,
     NoClassicalControlPredicate,
     NoFastFeedforwardPredicate,
     NoMidMeasurePredicate,
     NoSymbolsPredicate,
-    DefaultRegisterPredicate,
     Predicate,
 )
-from pytket.circuit import Pauli
-from pytket.passes import AutoRebase
-from pytket.pauli import QubitPauliString
 from pytket.utils.operators import QubitPauliOperator
 from pytket.utils.outcomearray import OutcomeArray
-from pytket.extensions.qulacs.qulacs_convert import (
-    tk_to_qulacs,
-    _IBM_GATES,
-    _MEASURE_GATES,
-    _ONE_QUBIT_GATES,
-    _TWO_QUBIT_GATES,
-    _ONE_QUBIT_ROTATIONS,
-)
+from qulacs import DensityMatrix, Observable, QuantumState
 
 _GPU_ENABLED = True
 try:
@@ -98,7 +100,7 @@ class QulacsBackend(Backend):
     _supports_expectation = True
     _expectation_allows_nonhermitian = False
     _persistent_handles = False
-    _GATE_SET = {
+    _GATE_SET = {  # noqa: RUF012
         *_TWO_QUBIT_GATES.keys(),
         *_1Q_GATES,
         OpType.Barrier,
@@ -124,7 +126,7 @@ class QulacsBackend(Backend):
             self._GATE_SET,
         )
         self._result_type = result_type
-        self._sim: Type[Union[QuantumState, DensityMatrix, "QuantumStateGpu"]]
+        self._sim: type[QuantumState | DensityMatrix | QuantumStateGpu]
         if result_type == "state_vector":
             self._sim = QuantumState
         elif result_type == "density_matrix":
@@ -143,7 +145,7 @@ class QulacsBackend(Backend):
         return self._backend_info
 
     @property
-    def required_predicates(self) -> List[Predicate]:
+    def required_predicates(self) -> list[Predicate]:
         return [
             NoClassicalControlPredicate(),
             NoFastFeedforwardPredicate(),
@@ -162,7 +164,7 @@ class QulacsBackend(Backend):
             return SequencePass(
                 [DecomposeBoxes(), FlattenRegisters(), self.rebase_pass()]
             )
-        elif optimisation_level == 1:
+        if optimisation_level == 1:
             return SequencePass(
                 [
                     DecomposeBoxes(),
@@ -171,25 +173,24 @@ class QulacsBackend(Backend):
                     self.rebase_pass(),
                 ]
             )
-        else:
-            return SequencePass(
-                [
-                    DecomposeBoxes(),
-                    FlattenRegisters(),
-                    FullPeepholeOptimise(),
-                    self.rebase_pass(),
-                ]
-            )
+        return SequencePass(
+            [
+                DecomposeBoxes(),
+                FlattenRegisters(),
+                FullPeepholeOptimise(),
+                self.rebase_pass(),
+            ]
+        )
 
     def process_circuits(
         self,
         circuits: Sequence[Circuit],
-        n_shots: Union[None, int, Sequence[Optional[int]]] = None,
+        n_shots: None | int | Sequence[int | None] = None,
         valid_check: bool = True,
         **kwargs: KwargTypes,
-    ) -> List[ResultHandle]:
+    ) -> list[ResultHandle]:
         circuits = list(circuits)
-        n_shots_list = Backend._get_n_shots_as_list(
+        n_shots_list = Backend._get_n_shots_as_list(  # noqa: SLF001
             n_shots,
             len(circuits),
             optional=True,
@@ -198,11 +199,11 @@ class QulacsBackend(Backend):
         if valid_check:
             self._check_all_circuits(circuits, nomeasure_warn=False)
 
-        seed = cast(Optional[int], kwargs.get("seed"))
+        seed = cast("int | None", kwargs.get("seed"))
         rng = Random(seed) if seed else None
 
         handle_list = []
-        for circuit, n_shots_circ in zip(circuits, n_shots_list):
+        for circuit, n_shots_circ in zip(circuits, n_shots_list, strict=False):
             qulacs_state = self._sim(circuit.n_qubits)
             qulacs_state.set_zero_state()
             qulacs_circ = tk_to_qulacs(
@@ -221,7 +222,7 @@ class QulacsBackend(Backend):
                 # hence we need to push the measurements through the
                 # SWAPs.
                 wire_map = circuit.implicit_qubit_permutation()
-                bits2index = list(
+                bits2index = list(  # noqa: C400
                     (com.bits[0], qubits.index(wire_map[com.qubits[0]]))
                     for com in circuit
                     if com.op.type == OpType.Measure
@@ -230,7 +231,7 @@ class QulacsBackend(Backend):
                     bits = circuit.bits
                     shots = OutcomeArray.from_ints([0] * n_shots_circ, len(bits))
                 else:
-                    bits, choose_indices = zip(*bits2index)  # type: ignore
+                    bits, choose_indices = zip(*bits2index, strict=False)  # type: ignore
 
                     samples = self._sample_quantum_state(
                         qulacs_state, n_shots_circ, rng
@@ -243,7 +244,7 @@ class QulacsBackend(Backend):
                     coeff = np.exp(phase * np.pi * 1j)
                     state *= coeff
                 except TypeError:
-                    warning(
+                    warning(  # noqa: LOG015
                         "Global phase is dependent on a symbolic parameter, so cannot "
                         "adjust for phase"
                     )
@@ -269,12 +270,11 @@ class QulacsBackend(Backend):
         self,
         quantum_state: Union[QuantumState, DensityMatrix, "QuantumStateGpu"],
         n_shots: int,
-        rng: Optional[Random],
-    ) -> List[int]:
+        rng: Random | None,
+    ) -> list[int]:
         if rng:
             return quantum_state.sampling(n_shots, rng.randint(0, 2**32 - 1))
-        else:
-            return quantum_state.sampling(n_shots)
+        return quantum_state.sampling(n_shots)
 
     def circuit_status(self, handle: ResultHandle) -> CircuitStatus:
         if handle in self._cache:
@@ -293,7 +293,7 @@ class QulacsBackend(Backend):
             self._check_all_circuits([state_circuit], nomeasure_warn=False)
 
         observable = Observable(state_circuit.n_qubits)
-        for qps, coeff in operator._dict.items():
+        for qps, coeff in operator._dict.items():  # noqa: SLF001
             _items = []
             if qps != QubitPauliString():
                 for qubit, pauli in qps.map.items():

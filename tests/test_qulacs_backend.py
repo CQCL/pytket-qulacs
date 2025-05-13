@@ -12,26 +12,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections import Counter
-from typing import List, Sequence, Union, Optional, Dict, Any
-import warnings
 import math
+import warnings
+from collections import Counter
+from collections.abc import Sequence
 from datetime import timedelta
-from hypothesis import given, strategies, settings
+from typing import Any
+
 import numpy as np
 import pytest
+from hypothesis import given, settings, strategies
+
 from pytket.backends import ResultHandle
-from pytket.circuit import Circuit, BasisOrder, OpType, Qubit
-from pytket.pauli import Pauli, QubitPauliString
+from pytket.circuit import BasisOrder, Circuit, OpType, Qubit
+from pytket.extensions.qulacs import QulacsBackend
 from pytket.passes import CliffordSimp
+from pytket.pauli import Pauli, QubitPauliString
 from pytket.utils.operators import QubitPauliOperator
 from pytket.utils.results import KwargTypes
-from pytket.extensions.qulacs import QulacsBackend
 
 
 def make_seeded_QulacsBackend(base: type[QulacsBackend]) -> type:
     class SeededQulacsBackend(base):  # type: ignore
-        def __init__(self, seed: int, kwargs: Optional[Dict[str, Any]] = None):
+        def __init__(self, seed: int, kwargs: dict[str, Any] | None = None):
             if kwargs is None:
                 kwargs = {}
             base.__init__(self, **kwargs)
@@ -40,11 +43,11 @@ def make_seeded_QulacsBackend(base: type[QulacsBackend]) -> type:
         def process_circuits(
             self,
             circuits: Sequence[Circuit],
-            n_shots: Union[None, int, Sequence[Optional[int]]] = None,
+            n_shots: None | int | Sequence[int | None] = None,
             valid_check: bool = True,
-            **kwargs: KwargTypes
-        ) -> List[ResultHandle]:
-            if not "seed" in kwargs:
+            **kwargs: KwargTypes,
+        ) -> list[ResultHandle]:
+            if "seed" not in kwargs:
                 kwargs["seed"] = self._seed
             return base.process_circuits(self, circuits, n_shots, valid_check, **kwargs)
 
@@ -65,7 +68,7 @@ try:
         [QulacsGPUBackend(), make_seeded_QulacsBackend(QulacsGPUBackend)(1)]
     )
 except ImportError:
-    warnings.warn("local settings failed to import QulacsGPUBackend", ImportWarning)
+    warnings.warn("local settings failed to import QulacsGPUBackend", ImportWarning)  # noqa: B028
 
 PARAM = -0.11176849
 
