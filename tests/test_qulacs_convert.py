@@ -17,11 +17,12 @@ import warnings
 import numpy as np
 from qulacs import QuantumCircuit, QuantumState
 from qulacs.state import inner_product
+
 from pytket.circuit import Circuit, OpType
 from pytket.extensions.qulacs import tk_to_qulacs
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
-warnings.warn("this will not show", DeprecationWarning)
+warnings.warn("this will not show", DeprecationWarning)  # noqa: B028
 
 
 def test_H() -> None:

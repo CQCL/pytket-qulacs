@@ -20,4 +20,4 @@ from .qulacs_backend import QulacsBackend
 try:
     from .qulacs_backend import QulacsGPUBackend
 except ImportError:
-    warnings.warn("local settings failed to import QulacsGPUBackend", ImportWarning)
+    warnings.warn("local settings failed to import QulacsGPUBackend", ImportWarning)  # noqa: B028
