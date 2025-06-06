@@ -3,8 +3,8 @@
 Changelog
 ~~~~~~~~~
 
-0.40.0 (unreleased)
--------------------
+0.40.0 (June 2025)
+------------------
 
 * Update pytket minimium version requirement to 2.5.0.
 * Update qulacs minimium version requirement to 0.6.12.
