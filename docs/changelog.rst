@@ -8,7 +8,7 @@ Changelog
 
 * Update pytket minimium version requirement to 2.5.0.
 * Update qulacs minimium version requirement to 0.6.12.
-* Support Python 3.13.
+* Support Python 3.13 (except on Windows).
 
 0.39.0 (November 2024)
 ----------------------
