@@ -6,7 +6,9 @@ Changelog
 0.40.0 (unreleased)
 -------------------
 
-* Update pytket minimium version requirement to 2.0.1.
+* Update pytket minimium version requirement to 2.5.0.
+* Update qulacs minimium version requirement to 0.6.12.
+* Support Python 3.13 (except on Windows).
 
 0.39.0 (November 2024)
 ----------------------
