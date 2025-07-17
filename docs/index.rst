@@ -31,7 +31,7 @@ Afterwards, install ``qulacs-gpu``:
    
    pip install qulacs-gpu
 
-The ``QulacsGPUBackend`` has an identical API to the ``QulacsBackend``.
+The ``QulacsGPUBackend`` has an identical API to the :py:class:`~.QulacsBackend`.
 
 .. toctree::
     api.rst
