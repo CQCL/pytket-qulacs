@@ -48,7 +48,7 @@ Changelog
 ---------------------
 
 * Updated pytket version requirement to 1.23.
-* Backends now report backend_info.
+* Backends now report :py:attr:`~pytket.backends.backend.Backend.backend_info`.
 
 0.32.0 (November 2023)
 ----------------------
@@ -64,7 +64,7 @@ Changelog
 0.30.0 (September 2023)
 -----------------------
 
-* Allow setting of rng seed in qulacs backend.
+* Allow setting of rng seed in :py:class:`QulacsBackend`.
 * Updated pytket version requirement to 1.19.
 
 0.29.0 (June 2023)
