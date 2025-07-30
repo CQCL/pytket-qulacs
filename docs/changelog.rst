@@ -3,6 +3,12 @@
 Changelog
 ~~~~~~~~~
 
+0.41.0 (July 2025)
+------------------
+
+* Update pytket minimium version requirement to 2.9.1.
+* Add support for MPI
+
 0.40.0 (June 2025)
 ------------------
 

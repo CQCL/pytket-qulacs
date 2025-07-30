@@ -43,7 +43,7 @@ setup(
     license="Apache 2",
     packages=find_namespace_packages(include=["pytket.*"]),
     include_package_data=True,
-    install_requires=["pytket >= 2.5.0", "qulacs >= 0.6.12"],
+    install_requires=["pytket >= 2.9.1", "qulacs >= 0.6.12"],
     classifiers=[
         "Environment :: Console",
         "Programming Language :: Python :: 3.10",
