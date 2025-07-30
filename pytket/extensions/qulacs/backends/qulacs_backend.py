@@ -63,7 +63,10 @@ from pytket.predicates import (
 )
 from pytket.utils.operators import QubitPauliOperator
 from pytket.utils.outcomearray import OutcomeArray
-from qulacs import DensityMatrix, Observable, QuantumState
+from qulacs import DensityMatrix, Observable, QuantumState, check_build_for_mpi
+
+if check_build_for_mpi():
+    from mpi4py import MPI  # type: ignore  # noqa: F401
 
 _GPU_ENABLED = True
 try:
@@ -180,7 +183,7 @@ class QulacsBackend(Backend):
             ]
         )
 
-    def process_circuits(
+    def process_circuits(  # noqa: PLR0912
         self,
         circuits: Sequence[Circuit],
         n_shots: None | int | Sequence[int | None] = None,
@@ -202,7 +205,10 @@ class QulacsBackend(Backend):
 
         handle_list = []
         for circuit, n_shots_circ in zip(circuits, n_shots_list, strict=False):
-            qulacs_state = self._sim(circuit.n_qubits)
+            if isinstance(self._sim, QuantumState):
+                qulacs_state = self._sim(circuit.n_qubits, use_multi_cpu=True)  # type: ignore
+            else:
+                qulacs_state = self._sim(circuit.n_qubits)
             qulacs_state.set_zero_state()
             qulacs_circ = tk_to_qulacs(
                 circuit, reverse_index=True, replace_implicit_swaps=True
